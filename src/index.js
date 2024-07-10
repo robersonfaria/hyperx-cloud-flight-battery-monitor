@@ -1,4 +1,5 @@
 const { app, BrowserWindow, Menu, Tray } = require('electron')
+const { nativeImage } = require('electron/common');
 const path = require('path')
 const Store = require('electron-store');
 const HyperX = require('./assets/js/classes/HyperX.js')
@@ -11,53 +12,52 @@ if (require('electron-squirrel-startup')) {
 
 let tray = null
 let icons = []
-const createTray = () => {
-  icons['no_connection'] = path.join(__dirname, 'assets/img/no_connection.ico')
-  icons['full'] = path.join(__dirname, 'assets/img/full.ico')
-  icons['half'] = path.join(__dirname, 'assets/img/half.ico')
-  icons['low'] = path.join(__dirname, 'assets/img/low.ico')
-  icons['high'] = path.join(__dirname, 'assets/img/high.ico')
-  icons['empty'] = path.join(__dirname, 'assets/img/empty.ico')
-  tray = new Tray(icons['no_connection'])
+
+app.whenReady().then(async () => {
+  icons['no_connection'] = nativeImage.createFromPath(path.join(__dirname, 'assets/img/png/disconnected.png'))
+  icons['full'] = nativeImage.createFromPath(path.join(__dirname, 'assets/img/png/full-battery.png'))
+  icons['half'] = nativeImage.createFromPath(path.join(__dirname, 'assets/img/png/half-battery.png'))
+  icons['low'] = nativeImage.createFromPath(path.join(__dirname, 'assets/img/png/low-battery.png'))
+  icons['high'] = nativeImage.createFromPath(path.join(__dirname, 'assets/img/png/battery-high.png'))
+  icons['empty'] = nativeImage.createFromPath(path.join(__dirname, 'assets/img/png/empty-battery.png'))
+  icons['charging'] = nativeImage.createFromPath(path.join(__dirname, 'assets/img/png/charging.png'))
+
+  tray = new Tray(icons['no_connection'].resize({ width: 32, height: 32 }))
   tray.setToolTip('Device not connected...')
 
   const contextMenu = Menu.buildFromTemplate([
-    { label: 'Quit', type: 'normal', click: () => {
-      hyperX.stop()
-      app.quit()
-    }}
+    { label: 'Quit', type: 'normal', click: () => { app.quit() }}
   ])
   tray.setContextMenu(contextMenu)
+  app.dock.setIcon(path.join(__dirname, 'assets/img/png/logo.png'))
 
   initConfig()
-  run()
-}
+  await run()
+})
 
 let hyperX = null
-function run() {
+async function run() {
   let updateDelay = store.get('updateDelay')
-  hyperX = new HyperX(tray, icons, updateDelay)
-  hyperX.runStatusUpdaterInterval()
-  hyperX.runListener()
+  hyperX = new HyperX(tray, icons, updateDelay, true)
+  await hyperX.init()
+  await hyperX.runStatusUpdaterInterval()
+  await hyperX.runListener()
 }
 
 function initConfig() {
-  if (store.get('updateDelay') === undefined) {
+  //if (store.get('updateDelay') === undefined) {
     store.set('updateDelay', 15);
-  }
+  //}
 }
-
-app.on('ready', createTray)
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
-    hyperX.stop()
     app.quit()
   }
 })
 
-app.on('activate', () => {
-  if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow()
-  }
-})
+
+app.on('before-quit', () => {
+  hyperX.stop()
+  tray.destroy()
+});

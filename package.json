@@ -1,6 +1,6 @@
 {
   "name": "hyperx-cloud-flight-s-battery-monitor",
-  "productName": "hyperx-cloud-flight-s-battery-monitor",
+  "productName": "Hyperx Cloud Flight - Battery Monitor",
   "version": "1.0.1",
   "description": "A tiny electron app, that displays the battery percentage of the HyperX Cloud Flight S Headset via a tray icon",
   "main": "src/index.js",
@@ -23,11 +23,11 @@
     "productName": "HyperX Cloud Flight S Battery Monitor",
     "appId": "hyperx-cloud-flight-s-battery-monitor",
     "win": {
-      "icon": "src/assets/img/icon.ico"
+      "icon": "src/assets/img/png/logo.png"
     },
     "nsis": {
-      "installerIcon": "src/assets/img/icon.ico",
-      "uninstallerIcon": "src/assets/img/icon.ico",
+      "installerIcon": "src/assets/img/png/logo.png",
+      "uninstallerIcon": "src/assets/img/png/logo.png",
       "uninstallDisplayName": "${productName}",
       "oneClick": false,
       "allowToChangeInstallationDirectory": true
@@ -63,7 +63,9 @@
   "dependencies": {
     "electron-squirrel-startup": "^1.0.0",
     "electron-store": "^8.0.2",
-    "node-hid": "^2.1.1"
+    "hyperx-cloud-flight-wireless": "github:srn/hyperx-cloud-flight-wireless",
+    "node-abi": "^3.65.0",
+    "node-hid": "^3.1.0"
   },
   "devDependencies": {
     "@electron-forge/cli": "^6.0.0-beta.64",
@@ -71,7 +73,7 @@
     "@electron-forge/maker-rpm": "^6.0.0-beta.64",
     "@electron-forge/maker-squirrel": "^6.0.0-beta.64",
     "@electron-forge/maker-zip": "^6.0.0-beta.64",
-    "electron": "19.0.6",
+    "electron": "^31.1.0",
     "electron-builder": "^23.1.0"
   }
 }

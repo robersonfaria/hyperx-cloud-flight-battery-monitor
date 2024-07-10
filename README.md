@@ -1,3 +1,6 @@
+# WIP - Work in progress
+This code was adapted from the [hyperx-cloud-flight-s-battery-monitor](https://github.com/CubE135/hyperx-cloud-flight-s-battery-monitor) repository and the adjustments are still in progress, currently only tested on MacOS Silicon and with a few bugs.
+
 # HyperX Cloud Flight S Battery Monitor
 A tiny electron app, that displays the battery percentage of the HyperX Cloud Flight S Headset via a tray icon.
 
@@ -30,3 +33,9 @@ To start the app in development mode, run `npm run start` or `yarn start`.
 
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)
+
+## Others projects
+
+NODE - https://github.com/srn/hyperx-cloud-flight-wireless
+RUST - https://github.com/kondinskis/hyperx-cloud-flight
+NODE - https://github.com/CubE135/hyperx-cloud-flight-s-battery-monitor
