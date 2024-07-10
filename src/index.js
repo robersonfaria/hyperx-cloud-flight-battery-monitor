@@ -38,10 +38,8 @@ app.whenReady().then(async () => {
 let hyperX = null
 async function run() {
   let updateDelay = store.get('updateDelay')
-  hyperX = new HyperX(tray, icons, updateDelay, true)
+  hyperX = new HyperX(tray, icons, updateDelay, true, true)
   await hyperX.init()
-  await hyperX.runStatusUpdaterInterval()
-  await hyperX.runListener()
 }
 
 function initConfig() {

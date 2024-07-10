@@ -14,34 +14,39 @@ module.exports = class HyperX {
   }
 
   async init() {
+    if (this.debug) console.log("init");
     const platform = process.platform;
     if (platform == "win32" || platform == "win64") {
       HID.setDriverType("libusb");
     }
 
-    // if (platform == "darwin") {
-    //   HID.setDriverType('libusb')
-    // }
-
     this.hidDevices = (await HID.devicesAsync()).filter(
-      (d) =>
-        d.vendorId === HyperX.VENDOR_ID && d.productId === HyperX.PRODUCT_ID
+      (d) => d.vendorId === HyperX.VENDOR_ID && d.productId === HyperX.PRODUCT_ID
     );
 
-    if (this.hidDevices.length === 0) {
-      this.tray.setImage(this.icons["no_connection"]);
-      this.tray.setToolTip("Device not connected...");
-    }
+    // if (this.hidDevices.length === 0) {
+    //   this.tray.setImage(this.icons["no_connection"]);
+    //   this.tray.setToolTip("Device not connected...");
+    // }
 
-    // 12
-    // 65472
-    // 65424
-    // 65280
     this.hidDevice = this.hidDevices.find(
       (d) => d.usagePage === 65424 && d.usage === 771
     );
+    if (!this.hidDevice) {
+      if (this.debug) console.log("Device not found", this.updateTryFindDeviceInterval);
+      if (this.updateTryFindDeviceInterval == undefined || this.updateTryFindDeviceInterval._destroyed) {
+        await this.tryFindDevice();
+      }
+    } else {
+      clearInterval(this.updateTryFindDeviceInterval);
+      this.device = await HID.HIDAsync.open(this.hidDevice.path);
+      await this.runStatusUpdaterInterval();
+      await this.runListener();
+    }
+  }
 
-    this.device = await HID.HIDAsync.open(this.hidDevice.path);
+  async tryFindDevice() {
+    this.updateTryFindDeviceInterval = setInterval(async () => { await this.init(); }, 10000); //10 seconds
   }
 
   async runStatusUpdaterInterval() {
@@ -58,7 +63,7 @@ module.exports = class HyperX {
       ]);
       this.device.write(buffer);
     } catch (e) {
-      console.error(e);
+      console.error('sendBatteryUpdateBuffer', e);
     }
   }
 
@@ -139,7 +144,16 @@ module.exports = class HyperX {
       this.tray.setToolTip(deviceName);
       // const device = await HID.HIDAsync.open(deviceInfo.path);
 
-      this.device.on("error", (err) => console.log(err));
+      this.device.on("error", async (err) => {
+        if (err.includes("could not read from HID device")) {
+          this.tray.setImage(this.icons["no_connection"].resize({ width: 32, height: 32 }));
+          this.tray.setToolTip("Device not connected...");
+          this.tray.setTitle("");
+          clearInterval(this.updateInterval);
+          await this.init();
+        }
+        console.log("event error", err)
+      });
       this.device.on("data", (data) => {
         if (this.debug && this.verbose) {
           console.log(new Date(), data, `length: ${data.length} hex: ${data.length.toString(16)}:`);
@@ -189,8 +203,9 @@ module.exports = class HyperX {
                 this.runStatusUpdaterInterval();
               } else if (data[1] == 0x03) {
                 if (this.debug) console.log("Device disconnected");
-                this.tray.setImage(this.icons["no_connection"].resize({ width: 20, height: 20 }));
+                this.tray.setImage(this.icons["no_connection"].resize({ width: 32, height: 32 }));
                 this.tray.setToolTip("Device not connected...");
+                this.tray.setTitle("");
                 clearInterval(this.updateInterval);
                 new Notification({
                   title: deviceInfo.product,
