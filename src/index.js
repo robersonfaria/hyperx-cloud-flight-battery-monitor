@@ -38,7 +38,9 @@ app.whenReady().then(async () => {
 let hyperX = null
 async function run() {
   let updateDelay = store.get('updateDelay')
-  hyperX = new HyperX(tray, icons, updateDelay, true, true)
+  debug = false
+  verbose = false
+  hyperX = new HyperX(tray, icons, updateDelay, debug, verbose)
   await hyperX.init()
 }
 
